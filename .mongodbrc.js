@@ -19,7 +19,7 @@ r = function(key, values)
     return result;
 }
 
-sc = function()
+sc = function() // show collections
 {
     out = db.getCollectionNames();
     
