@@ -47,30 +47,24 @@ fix = function()
 	});
 }
 
-mach = function(mr_latest, mr_previous)
-{
+mach = function(mr_latest, mr_previous) {
     var cur 	  = db.getCollection('mr_' +mr_latest).find();
     var per 	  = new cPercenter(cur.count(), 50000);
     var changeCol = db.getCollection('change_' +mr_latest); // change_YYYYMMDD
     var	prevMr	  = db.getCollection('mr_' +mr_previous);
 
-    cur.forEach(function(i)
-    {
+    cur.forEach(function(i) {
 		per.step();
         res = prevMr.findOne({_id:i._id}); // hole vom vortag		
 	
-        if( res )
-        {
+        if( res ) {
             res2 = i.value.count - res.value.count; // i = heute = 5, res 2 = gestern = 4, 5 - 4 = 1
             
-            if( 0 != res2 ) // ab oder aufstieg
-            {
+            if( 0 != res2 ) {// ab oder aufstieg
                 print('id:' + i._id + ' um ' + res2 + ' aufgestiegen');
                 changeCol.insert({_id:i._id, 'change':res2});
             } // if
-        } // if
-        else
-        {
+        } else {
             changeCol.insert({_id:i._id, 'change':0}); // 0 fuer das erste mal dabei
             print('id:' + i._id + ' first time');
         }
@@ -89,8 +83,7 @@ mach = function(mr_latest, mr_previous)
 		per.step();
 		res = latestCol.findOne({_id:i._id}); // gucken ob es ihn noch gibt
 
-		if(!res)
-		{
+		if(!res) {
 			count++;
 			print('id:' + i._id + ' hat keine Favoriten mehr');
 		} // if
@@ -121,14 +114,18 @@ process = function(changeDate) // aufbauen und updaten der favoriten
     });
 }
 
-changeId = function()
-{
-	cur = db.mr_20120302.find();
-	cur.forEach(function(i)
-	{
-		a = {_id:parseInt(i._id), count:i.value.count};
-		db.mr_20120302_tmp.insert(a);
-	});
+
+updateFavorits = function(date, dateBefore) { // YYYY-MM-DD,   YYYYMMDD
+	cleanDate = date.replace(/\-/g, ""); // from YYYY-MM-DD to YYYYMMDD
+	
+	// first mapReduce
+	db.getCollection('favorits_' +cleanDate).mapReduce(m, r, {out:'mr_' +cleanDate});
+	
+	// calculate the change collection with todays mapReduce + the mapReduce from the day before
+	mach('mr_' +cleanDate, 'mr_' +dateBefore);
+	
+	// insert the change data into the favorits collection
+	process(date);
 }
 
 // === == === == === == === == === == === == === == === == === //
