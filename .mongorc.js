@@ -2,6 +2,7 @@ conn = new Mongo();
 db = conn.getDB('mr');
 print('connected to mr');
 
+
 m = function()
 {
     emit(this.photoId, {count:1});
