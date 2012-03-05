@@ -93,14 +93,14 @@ mach = function(mr_latest, mr_previous) {
 
 process = function(changeDate) // aufbauen und updaten der favoriten
 {
-    var cur		  = db.getCollection('mr_' +changeDate.replace(/\-/g, "")).find(); // ueber alle MapReducten Favoriten
+    var cur		  = db.getCollection('mr_20120305'); // ' +changeDate.replace(/\-/g, "")).find(); // ueber alle MapReducten Favoriten
 	var per 	  = new cPercenter(cur.count(), 20000);
 	var changeCol = db.getCollection('change_' +changeDate.replace(/\-/g, "") );
 	
     cur.forEach(function(i)
     {
     	per.step();
-        res   = changeCol.findOne({_id:i._id});
+        res   = changeCol.findOne({_id:i._id}); // @TODO das vielleicht in die mr tabel mit verbauen? also die relative change
 		rel   = (res) ? res.change: 0;
 		count = i.value.count;
 
@@ -114,16 +114,33 @@ process = function(changeDate) // aufbauen und updaten der favoriten
     });
 }
 
+find = function() {
+	var cur   = db.favorits.find({'change.date':'2012-03-04'});
+	var count = 0;
+	
+	cur.forEach(function(i) {
+
+		if(100 > count)
+			printjson(i);
+			
+		count++;
+		
+	});
+
+}
 
 updateFavorits = function(date, dateBefore) { // YYYY-MM-DD,   YYYYMMDD
 	cleanDate = date.replace(/\-/g, ""); // from YYYY-MM-DD to YYYYMMDD
-	
+
+	print('call mapReduce');
 	// first mapReduce
 	db.getCollection('favorits_' +cleanDate).mapReduce(m, r, {out:'mr_' +cleanDate});
-	
+
+	print('call mach()');	
 	// calculate the change collection with todays mapReduce + the mapReduce from the day before
-	mach('mr_' +cleanDate, 'mr_' +dateBefore);
+	mach(cleanDate, dateBefore);
 	
+	print('call process()');
 	// insert the change data into the favorits collection
 	process(date);
 }
