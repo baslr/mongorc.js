@@ -19,31 +19,17 @@ r = function(key, values)
     return result;
 }
 
-test = function()
-{
+test = function() {
 	var a = db.favorits.find();
-	var count = 0;
-	a.forEach(function(i)
-	{
-		if(i.change.length < 3)
-		{
-			++count;
-		}
-	});
-	
-	print(count +' Photo nicht mehr da');
-}
 
-fix = function()
-{
-	var a = db.mr_20120303.find();
-	var per = new cPercenter(a.count(), 50000);
-	a.forEach(function(i)
-	{
-		per.step();
-		b = {_id: i._id, value:{count:i.count} };
-		
-		db.mr_20120303_tmp.insert(b);
+	a.forEach(function(i) {
+		i.change.forEach(function(a) {
+			b = a.relative;
+			if(0 != b)
+			{
+				print(b);
+			}
+		});
 	});
 }
 
@@ -93,7 +79,7 @@ mach = function(mr_latest, mr_previous) {
 
 process = function(changeDate) // aufbauen und updaten der favoriten
 {
-    var cur		  = db.getCollection('mr_20120305'); // ' +changeDate.replace(/\-/g, "")).find(); // ueber alle MapReducten Favoriten
+    var cur		  = db.getCollection('mr_' +changeDate.replace(/\-/g, "")).find(); // ueber alle MapReducten Favoriten
 	var per 	  = new cPercenter(cur.count(), 20000);
 	var changeCol = db.getCollection('change_' +changeDate.replace(/\-/g, "") );
 	
@@ -112,21 +98,6 @@ process = function(changeDate) // aufbauen und updaten der favoriten
 										  $push:{change:{date: changeDate, relative:rel}}
 										}, a);
     });
-}
-
-find = function() {
-	var cur   = db.favorits.find({'change.date':'2012-03-04'});
-	var count = 0;
-	
-	cur.forEach(function(i) {
-
-		if(100 > count)
-			printjson(i);
-			
-		count++;
-		
-	});
-
 }
 
 updateFavorits = function(date, dateBefore) { // YYYY-MM-DD,   YYYYMMDD
