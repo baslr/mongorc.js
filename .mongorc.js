@@ -64,7 +64,7 @@ upFavs = function(dateLatest, datePrevious) {
 												                    relative : res2 }]
 		                };
 
-        		db.favoritsTest.update({_id:i._id}, { $set:{absolute:i.value.count},
+        		db.favorits.update({_id:i._id}, { $set:{absolute:i.value.count},
         										  $push:{change:{date: dateLatest, relative:res2}}
         										}, a);
             } // if
@@ -76,7 +76,7 @@ upFavs = function(dateLatest, datePrevious) {
                                                                  relative : 1 }]
 		            };
             
-    		db.favoritsTest.update({_id:i._id}, { $set:{absolute:i.value.count},
+    		db.favorits.update({_id:i._id}, { $set:{absolute:i.value.count},
     										  $push:{change:{date: dateLatest, relative:1}}
     										}, a); 
         } // else        
