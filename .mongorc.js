@@ -19,16 +19,14 @@ r = function(key, values)
 }
 
 test = function() {
-	var a = db.favorits.find();
+	db.favoritsTest.find().forEach(function(a) {
 
-	a.forEach(function(i) {
-		i.change.forEach(function(a) {
-			b = a.relative;
-			if(0 != b)
-			{
-				print(b);
-			}
-		});
+        a.change.forEach(function(b) {
+            printjson(b);
+            
+            db.favoritsTest.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
+        });
+	
 	});
 }
 
