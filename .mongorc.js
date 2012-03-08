@@ -38,7 +38,7 @@ upFavs = function(dateLatest, datePrevious) {
     
 	print('call mapReduce');
 	// first mapReduce
-//	db.getCollection('favorits_' +dateLatestClean).mapReduce(m, r, {out:'mr_' +dateLatestClean});
+	db.getCollection('favorits_' +dateLatestClean).mapReduce(m, r, {out:'mr_' +dateLatestClean});
 	
 	print('calculate changes for change collection and insert changes into favorits');
 	
