@@ -1,5 +1,4 @@
-conn = new Mongo();
-db = conn.getDB('mr');
+db = db.getSisterDB('mr');
 print('connected to mr');
 
 m = function()
@@ -31,6 +30,57 @@ test = function() {
 			}
 		});
 	});
+}
+
+upFavs = function(dateLatest, datePrevious) {
+    dateLatestClean   = dateLatest.replace(/\-/g, "");
+    datePreviousClean = datePrevious.replace(/\-/g, "");
+    
+	print('call mapReduce');
+	// first mapReduce
+//	db.getCollection('favorits_' +dateLatestClean).mapReduce(m, r, {out:'mr_' +dateLatestClean});
+	
+	print('calculate changes for change collection and insert changes into favorits');
+	
+	var curMr     = db.getCollection('mr_' +dateLatestClean).find();
+	var prevMr    = db.getCollection('mr_' +datePreviousClean);
+    var changeCol = db.getCollection('change_' +dateLatestClean); // change_YYYYMMDD
+	var per       = new cPercenter(curMr.count(), 5000);
+
+	curMr.forEach(function(i) {
+        per.step();
+        
+        res = prevMr.findOne({_id:i._id}); // hole vom Vortag
+        
+        
+        if( res ) { // wenn vorhanden
+            res2 = i.value.count - res.value.count; // berrechne veränderung vom vortag
+            
+            if( 0 != res2 ) { // hat sich etwas getan im Bezug auf den Vortag?
+                print('id:' +i._id +' um ' +res2 +' verändert');
+                changeCol.insert({_id:i._id, change:res2});
+                
+                var a = {_id:i._id, absolute:i.value.count, change:[{date    : dateLatest,
+												                    relative : res2 }]
+		                };
+
+        		db.favoritsTest.update({_id:i._id}, { $set:{absolute:i.value.count},
+        										  $push:{change:{date: dateLatest, relative:res2}}
+        										}, a);
+            } // if
+        } else { // das erste mal hier
+            print('id:' +i._id +' first time.');
+            changeCol.insert({_id:i._id, change:1});
+            
+            var a = {_id:i._id, absolute:i.value.count, change:[{date     : dateLatest,
+                                                                 relative : 1 }]
+		            };
+            
+    		db.favoritsTest.update({_id:i._id}, { $set:{absolute:i.value.count},
+    										  $push:{change:{date: dateLatest, relative:1}}
+    										}, a); 
+        } // else        
+	});	// uebers mapReduce
 }
 
 mach = function(mr_latest, mr_previous) {
