@@ -47,18 +47,15 @@ test = function() {
 }
 
 upFavs = function(dateLatest, datePrevious) {
-    dateLatestClean   = dateLatest.replace(/\-/g, "");
-    datePreviousClean = datePrevious.replace(/\-/g, "");
-    
 	print('call mapReduce');
 	// first mapReduce
-	db.getCollection('favorits_' +dateLatestClean).mapReduce(m, r, {out:'mr_' +dateLatestClean});
+	db.getCollection('favorits_' +dateLatest).mapReduce(m, r, {out:'mr_' +dateLatest});
 	
 	print('calculate changes for change collection and insert changes into favorits');
 	
-	var curMr     = db.getCollection('mr_' +dateLatestClean).find();
-	var prevMr    = db.getCollection('mr_' +datePreviousClean);
-    var changeCol = db.getCollection('change_' +dateLatestClean); // change_YYYYMMDD
+	var curMr     = db.getCollection('mr_' +dateLatest).find();
+	var prevMr    = db.getCollection('mr_' +datePrevious);
+    var changeCol = db.getCollection('change_' +dateLatest); // change_YYYYMMDD
 	var per       = new cPercenter(curMr.count(), 5000);
 
 	curMr.forEach(function(i) {
