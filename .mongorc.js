@@ -230,3 +230,43 @@ compactAll = function() // compacts all collections
 		col.runCommand('compact');
 	});
 }
+
+profile = function() { // profiling to the profile collection
+    var ts = 0;
+
+    while(true) {
+        db.system.profile.find().sort({$natural:-1}).limit(2).forEach(function(a) {
+        
+                printjson(a);
+        }) // forEach
+        print('----------------');
+        sleep(1000);
+    };
+
+
+/*
+    var ts = null;
+    while(true) {
+        res = db.settings.find({'profiling.active':true});
+        
+        if( res ) {
+            res2 = db.system.profile.find().sort({$natural:-1});
+            
+            res2.forEach(function(a) {
+                time = a.ts.getTime();
+            });
+        } // if
+    }   // while
+*/
+}
+
+
+
+
+
+
+
+
+
+
+
