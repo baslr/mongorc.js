@@ -18,11 +18,26 @@ r = function(key, values)
     return result;
 }
 
-test = function() {
-	db.favoritsTest.find().forEach(function(a) {
-
+test2 = function() {
+        var per   = new cPercenter(db.favoritsTest.count(), 25000);
+	var count = 0;
+        db.favoritsTest.find().forEach(function(a) {
+        per.step();
         a.change.forEach(function(b) {
-            printjson(b);
+	    count++;
+        });
+        });
+       print('Insgesammt ' +count +' Veränderungen gespeichert');
+}
+
+
+
+
+test = function() {
+	var per = new cPercenter(db.favoritsTest.count(), 25000);
+	db.favoritsTest.find().forEach(function(a) {
+	per.step();
+        a.change.forEach(function(b) {
             
             db.favoritsTest.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
         });
