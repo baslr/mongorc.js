@@ -19,12 +19,10 @@ r = function(key, values)
 }
 
 test = function() {
-	db.favoritsTest.find().forEach(function(a) {
+	db.favorits.find().forEach(function(a) {
 
         a.change.forEach(function(b) {
-            printjson(b);
-            
-            db.favoritsTest.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
+            db.favorits.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
         });
 	
 	});
