@@ -19,9 +19,9 @@ r = function(key, values)
 }
 
 test2 = function() {
-        var per   = new cPercenter(db.favoritsTest.count(), 25000);
+        var per   = new cPercenter(db.favorits.count(), 25000);
 	var count = 0;
-        db.favoritsTest.find().forEach(function(a) {
+        db.favorits.find().forEach(function(a) {
         per.step();
         a.change.forEach(function(b) {
 	    count++;
