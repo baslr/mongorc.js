@@ -36,16 +36,14 @@ test2 = function() {
 test = function() {
 	var per = new cPercenter(db.favorits.count(), 25000);
 	per.step();
-            
 
 	db.favorits.find().forEach(function(a) {
 		per.step();
-	        a.change.forEach(function(b) {
-      		      db.favorits.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
-      	        });
-	
-	});
 
+        a.change.forEach(function(b) {
+            db.favorits.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
+        });
+	});
 }
 
 upFavs = function(dateLatest, datePrevious) {
