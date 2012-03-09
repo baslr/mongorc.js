@@ -34,15 +34,18 @@ test2 = function() {
 
 
 test = function() {
-	var per = new cPercenter(db.favoritsTest.count(), 25000);
-	db.favoritsTest.find().forEach(function(a) {
+	var per = new cPercenter(db.favorits.count(), 25000);
 	per.step();
-        a.change.forEach(function(b) {
             
-            db.favoritsTest.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
-        });
+
+	db.favorits.find().forEach(function(a) {
+		per.step();
+	        a.change.forEach(function(b) {
+      		      db.favorits.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
+      	        });
 	
 	});
+
 }
 
 upFavs = function(dateLatest, datePrevious) {
