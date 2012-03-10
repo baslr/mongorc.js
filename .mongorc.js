@@ -18,16 +18,6 @@ r = function(key, values)
     return result;
 }
 
-test2 = function(args) {
-    args.forEach(function(pair) {
-        print('latest: ' +pair.latest +' previous: ' +pair.prev); 
-    });
-}
-
-
-
-
-
 upFavs = function(args) {
     args.forEach(function(pair) {
         var dateLatest   = pair.latest;
@@ -223,6 +213,18 @@ compactAll = function() // compacts all collections
 		col = db.getCollection(value);
 		col.runCommand('compact');
 	});
+}
+
+prntFavs = function(date) { // prints favoris more compact
+    db.favorits.find({'change.date':date}).sort({'change.date':-1, 'change.relative':-1}).forEach(function(a) {
+        var out = 'id:' +a._id +', abs:' +a.absolute;
+        
+        a.change.forEach(function(b) {
+            out += ', ' +b.date +':' +b.relative;
+        })
+
+        print(out);
+    });
 }
 
 profile = function() { // profiling to the profile collection
