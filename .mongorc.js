@@ -30,8 +30,12 @@ test2 = function(args) {
 
 upFavs = function(args) {
     args.forEach(function(pair) {
-        dateLatest   = pair.latest;
-        datePrevious = pair.prev;
+        var dateLatest   = pair.latest;
+        var datePrevious = pair.prev;
+
+	print(dateLatest);
+	print(datePrevious);
+
         
         if( !db.getCollection('mr_' +dateLatest).count() ) {
         	print('call mapReduce');
