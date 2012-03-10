@@ -18,81 +18,74 @@ r = function(key, values)
     return result;
 }
 
-test2 = function() {
-        var per   = new cPercenter(db.favorits.count(), 25000);
-	var count = 0;
-        db.favorits.find().forEach(function(a) {
-        per.step();
-        a.change.forEach(function(b) {
-	    count++;
-        });
-        });
-       print('Insgesammt ' +count +' Veränderungen gespeichert');
+test2 = function(args) {
+    args.forEach(function(pair) {
+        print('latest: ' +pair.latest +' previous: ' +pair.prev); 
+    });
 }
 
 
 
 
-test = function() {
-	var per = new cPercenter(db.favorits.count(), 25000);
-	per.step();
 
-	db.favorits.find().forEach(function(a) {
-		per.step();
-
-        a.change.forEach(function(b) {
-            db.favorits.update({_id:a._id, 'change.date': b.date }, {$set:{'change.$.date': parseInt( b.date.replace(/\-/g, ""))}} );
-        });
-	});
-}
-
-upFavs = function(dateLatest, datePrevious) {
-	print('call mapReduce');
-	// first mapReduce
-	db.getCollection('favorits_' +dateLatest).mapReduce(m, r, {out:'mr_' +dateLatest});
-	
-	print('calculate changes for change collection and insert changes into favorits');
-	
-	var curMr     = db.getCollection('mr_' +dateLatest).find();
-	var prevMr    = db.getCollection('mr_' +datePrevious);
-    var changeCol = db.getCollection('change_' +dateLatest); // change_YYYYMMDD
-	var per       = new cPercenter(curMr.count(), 5000);
-
-	curMr.forEach(function(i) {
-        per.step();
+upFavs = function(args) {
+    args.forEach(function(pair) {
+        dateLatest   = pair.latest;
+        datePrevious = pair.prev;
         
-        res = prevMr.findOne({_id:i._id}); // hole vom Vortag
-        
-        
-        if( res ) { // wenn vorhanden
-            res2 = i.value.count - res.value.count; // berrechne veränderung vom vortag
+        if( !db.getCollection('mr_' +dateLatest).count() ) {
+        	print('call mapReduce');
+        	db.getCollection('favorits_' +dateLatest).mapReduce(m, r, {out:'mr_' +dateLatest}); // mapReduce to group by id
+        	print('mapReduce done.');
+        } // if
+    	
+    	print('calculate changes for change collection and insert changes into favorits');
+    	var curMr     = db.getCollection('mr_' +dateLatest).find();
+    	var prevMr    = db.getCollection('mr_' +datePrevious);
+        var changeCol = db.getCollection('change_' +dateLatest); // change_YYYYMMDD
+    	var per       = new cPercenter(curMr.count(), 5000);
+    	var bChange   = changeCol.count() ? true : false;
+    
+    	curMr.forEach(function(i) {
+            per.step();
+            res = prevMr.findOne({_id:i._id}); // hole vom Vortag
             
-            if( 0 != res2 ) { // hat sich etwas getan im Bezug auf den Vortag?
-                print('id:' +i._id +' um ' +res2 +' verändert');
-                changeCol.insert({_id:i._id, change:res2});
+            if( res ) { // wenn vorhanden
+                res2 = i.value.count - res.value.count; // berrechne veränderung vom vortag
                 
-                var a = {_id:i._id, absolute:i.value.count, change:[{date    : dateLatest,
-												                    relative : res2 }]
-		                };
+                if( 0 != res2 ) { // hat sich etwas getan im Bezug auf den Vortag?
+                    print('id:' +i._id +' um ' +res2 +' verändert');
 
+                    if( !bChange ) {
+                        changeCol.insert({_id:i._id, change:res2});
+                    } // if Change Collection not exists
+                    
+                    var a = {_id:i._id, absolute:i.value.count, change:[{date : dateLatest,
+        								                            relative  : res2 }]
+        		            };
+
+                    db.favorits.update({_id:i._id}, { $set:{absolute:i.value.count},
+                                                     $push:{change:{date: dateLatest, relative:res2}}
+            										}, a);
+                } // if 0 != res2
+            } else { // das erste mal hier
+                print('id:' +i._id +' first time.');
+                
+                if( !bChange ) {
+                    changeCol.insert({_id:i._id, change:i.value.count});                
+                }
+                
+                var a = {_id:i._id, absolute:i.value.count, change:[{date     : dateLatest,
+                                                                     relative : i.value.cout }]
+    		            };
+                
         		db.favorits.update({_id:i._id}, { $set:{absolute:i.value.count},
-        										  $push:{change:{date: dateLatest, relative:res2}}
-        										}, a);
-            } // if
-        } else { // das erste mal hier
-            print('id:' +i._id +' first time.');
-            changeCol.insert({_id:i._id, change:1});
-            
-            var a = {_id:i._id, absolute:i.value.count, change:[{date     : dateLatest,
-                                                                 relative : 1 }]
-		            };
-            
-    		db.favorits.update({_id:i._id}, { $set:{absolute:i.value.count},
-    										  $push:{change:{date: dateLatest, relative:1}}
-    										}, a); 
-        } // else        
-	});	// uebers mapReduce
-}
+        										  $push:{change:{date: dateLatest, relative:i.value.count}}
+        										}, a); 
+            } // else        
+    	});	// uebers mapReduce
+    }); // forEach
+} // upFavs()
 
 mach = function(mr_latest, mr_previous) {
     var cur 	  = db.getCollection('mr_' +mr_latest).find();
