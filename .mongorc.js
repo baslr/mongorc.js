@@ -50,10 +50,11 @@ upFavs = function(args) {
 
     	curMr.forEach(function(i) {
             per.step();
-            res = prevMr.findOne({_id:i._id}); // hole vom Vortag
+            res   = prevMr.findOne({_id:i._id}); // hole vom Vortag
+            count = i.value.count;
             
             if( res ) { // wenn vorhanden
-                res2 = i.value.count - res.value.count; // berrechne veränderung vom vortag
+                res2 = count - res.value.count; // berrechne veränderung vom vortag
                 
                 if( 0 != res2 ) { // hat sich etwas getan im Bezug auf den Vortag?
                     print('id:' +i._id +' um ' +res2 +' verändert');
@@ -62,11 +63,11 @@ upFavs = function(args) {
                         changeCol.insert({_id:i._id, change:res2});
                     } // if Change Collection not exists
                     
-                    var a = {_id:i._id, absolute:i.value.count, change:[{date : dateLatest,
+                    var a = {_id:i._id, absolute:count, change:[{date : dateLatest,
         								                            relative  : res2 }]
         		            };
 
-                    db.favorits.update({_id:i._id}, { $set:{absolute:i.value.count},
+                    db.favorits.update({_id:i._id}, { $set:{absolute:count},
                                                      $push:{change:{date: dateLatest, relative:res2}}
             										}, a);
                 } // if 0 != res2
@@ -74,15 +75,15 @@ upFavs = function(args) {
                 print('id:' +i._id +' first time.');
                 
                 if( !bChange ) {
-                    changeCol.insert({_id:i._id, change:i.value.count});                
+                    changeCol.insert({_id:i._id, change:count});                
                 }
                 
-                var a = {_id:i._id, absolute:i.value.count, change:[{date     : dateLatest,
-                                                                     relative : i.value.count }]
+                var a = {_id:i._id, absolute:count, change:[{date     : dateLatest,
+                                                                     relative : count }]
     		            };
                 
-        		db.favorits.update({_id:i._id}, { $set:{absolute:i.value.count},
-        										  $push:{change:{date: dateLatest, relative:i.value.count}}
+        		db.favorits.update({_id:i._id}, { $set:{absolute:count},
+        										  $push:{change:{date: dateLatest, relative:count}}
         										}, a); 
             } // else        
     	});	// uebers mapReduce
