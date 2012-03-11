@@ -42,7 +42,7 @@ upFavs = function(args) {
             prevMr.find().forEach(function(i) {
 
             var a = {_id:i._id, absolute:i.value.count, change:[{date     : datePrevious,
-                                                                 relative : i.value.cout }]
+                                                                 relative : i.value.count }]
 		            };
 		    db.favorits.insert(a);
             }); // forEach
@@ -78,7 +78,7 @@ upFavs = function(args) {
                 }
                 
                 var a = {_id:i._id, absolute:i.value.count, change:[{date     : dateLatest,
-                                                                     relative : i.value.cout }]
+                                                                     relative : i.value.count }]
     		            };
                 
         		db.favorits.update({_id:i._id}, { $set:{absolute:i.value.count},
