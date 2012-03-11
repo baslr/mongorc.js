@@ -39,7 +39,7 @@ upFavs = function(args) {
         if( 0 == db.getCollection('favorits').count() ) {
             print('no favorits collection initial run');
             
-            prev.Mr.find().forEach(function(i) {
+            prevMr.find().forEach(function(i) {
 
             var a = {_id:i._id, absolute:i.value.count, change:[{date     : datePrevious,
                                                                  relative : i.value.cout }]
