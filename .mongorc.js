@@ -22,10 +22,6 @@ upFavs = function(args) {
     args.forEach(function(pair) {
         var dateLatest   = pair.latest;
         var datePrevious = pair.prev;
-
-	print(dateLatest);
-	print(datePrevious);
-
         
         if( !db.getCollection('mr_' +dateLatest).count() ) {
         	print('call mapReduce');
@@ -40,6 +36,18 @@ upFavs = function(args) {
     	var per       = new cPercenter(curMr.count(), 5000);
     	var bChange   = changeCol.count() ? true : false;
     
+        if( 0 == db.getCollection('favorits') ) {
+            print('no favorits collection initial run');
+            
+            prev.Mr.find().forEach(function(i) {
+
+            var a = {_id:i._id, absolute:i.value.count, change:[{date     : datePrevious,
+                                                                 relative : i.value.cout }]
+		            };
+		    db.favorits.insert(a);
+            }); // forEach
+        } // if
+
     	curMr.forEach(function(i) {
             per.step();
             res = prevMr.findOne({_id:i._id}); // hole vom Vortag
