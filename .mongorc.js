@@ -36,7 +36,7 @@ upFavs = function(args) {
     	var per       = new cPercenter(curMr.count(), 5000);
     	var bChange   = changeCol.count() ? true : false;
     
-        if( 0 == db.getCollection('favorits') ) {
+        if( 0 == db.getCollection('favorits').count() ) {
             print('no favorits collection initial run');
             
             prev.Mr.find().forEach(function(i) {
